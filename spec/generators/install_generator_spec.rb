@@ -68,23 +68,19 @@ describe Administrate::Generators::InstallGenerator, :generator do
       end
     end
 
-    it "skips models that don't have a named constant,\
-    as happens for duplicate `has_and_belongs_to_many` relationships" do
+    it "skips models that don't have a named constant" do
       begin
-        ActiveRecord::Schema.define { create_join_table(:foos, :bars) }
-        class Foo < ActiveRecord::Base
-          has_and_belongs_to_many :bars
-          has_and_belongs_to_many :bars
-        end
-        class Bar < ActiveRecord::Base
-          has_and_belongs_to_many :foos
-        end
-
         stub_generator_dependencies
-        manifest = file("app/dashboards/dashboard_manifest.rb")
+        ActiveRecord::Schema.define { create_table(:foos) }
+        _unnamed_model = Class.new(ActiveRecord::Base) do
+          def self.table_name
+            :foos
+          end
+        end
 
         run_generator
 
+        manifest = file("app/dashboards/dashboard_manifest.rb")
         expect(manifest).to have_correct_syntax
       ensure
         remove_constants :Foo, :Bar
