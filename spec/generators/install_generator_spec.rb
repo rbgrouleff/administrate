@@ -67,6 +67,29 @@ describe Administrate::Generators::InstallGenerator, :generator do
         remove_constants :ModelWithoutDBTable
       end
     end
+
+    it "skips models that don't have a named constant,\
+    as happens for duplicate `has_and_belongs_to_many` relationships" do
+      begin
+        ActiveRecord::Schema.define { create_join_table(:foos, :bars) }
+        class Foo < ActiveRecord::Base
+          has_and_belongs_to_many :bars
+          has_and_belongs_to_many :bars
+        end
+        class Bar < ActiveRecord::Base
+          has_and_belongs_to_many :foos
+        end
+
+        stub_generator_dependencies
+        manifest = file("app/dashboards/dashboard_manifest.rb")
+
+        run_generator
+
+        expect(manifest).to have_correct_syntax
+      ensure
+        remove_constants :Foo, :Bar
+      end
+    end
   end
 
   describe "config/routes.rb" do
