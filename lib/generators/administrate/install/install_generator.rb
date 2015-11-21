@@ -42,8 +42,7 @@ module Administrate
         end
 
         unnamed_constants.each do |invalid_model|
-          puts "WARNING: Unable to generate a dashboard for #{invalid_model}."
-          puts "         It is not a valid Ruby constant."
+          puts "NOTICE: Skipping dynamically generated model #{invalid_model}."
         end
       end
 
